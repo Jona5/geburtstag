@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Detektiv-Spiel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="wrap">
+    <h1>🕵️ Akte des Falls</h1>
+    <p class="subtitle">Gib den 4-stelligen Code ein, den du gefunden hast.</p>
+
+    <section id="entry" class="card">
+      <input type="text" id="code-input" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="••••" aria-label="4-stelliger Code">
+      <div class="btn-row">
+        <button id="check-btn" class="btn">Prüfen</button>
+      </div>
+      <p id="error" class="error-msg" hidden>❌ Dieser Code ist unbekannt. Versuch's nochmal.</p>
+    </section>
+
+    <section id="result" class="card" hidden>
+      <p id="result-text" class="result-text"></p>
+      <button id="reset-btn" class="btn btn-secondary">Neuen Code eingeben</button>
+    </section>
+  </main>
+
+  <footer>
+    <a href="config.html" class="config-link" title="Konfiguration">⚙</a>
+  </footer>
+
+  <script src="storage.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

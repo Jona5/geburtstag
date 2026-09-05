@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Konfiguration – Detektiv-Spiel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="wrap" style="max-width:640px;">
+
+    <div id="gate" class="card">
+      <h1 style="font-size:1.4rem;">🔒 Admin-Zugang</h1>
+      <form id="gate-form">
+        <input type="password" id="gate-input" placeholder="Passwort" autocomplete="off">
+        <button class="btn" type="submit">Entsperren</button>
+      </form>
+      <p id="gate-error" class="error-msg" hidden>Falsches Passwort.</p>
+      <p class="hint">Standard-Passwort steht in config.js. Diese Seite ist nicht wirklich geschützt (öffentliches Repo) – reicht aber, um neugierige Gäste fernzuhalten.</p>
+    </div>
+
+    <div id="panel" class="card" hidden style="text-align:left;">
+      <h1 style="font-size:1.4rem; text-align:center;">🗂 Codes verwalten</h1>
+
+      <form id="add-form" class="add-form">
+        <label>Neuer Code (4 Ziffern)
+          <input type="text" id="new-code" inputmode="numeric" maxlength="4" placeholder="1234">
+        </label>
+        <label>Text, der bei diesem Code angezeigt wird
+          <textarea id="new-text" rows="3" placeholder="Der Text, den die Spieler sehen..."></textarea>
+        </label>
+        <button class="btn" type="submit">Hinzufügen</button>
+      </form>
+
+      <div id="entry-list"></div>
+
+      <div class="toolbar">
+        <button id="export-btn" class="btn btn-secondary" type="button">⬇ Export (JSON)</button>
+        <label class="btn btn-secondary" style="cursor:pointer;">
+          ⬆ Import (JSON)
+          <input type="file" id="import-input" accept="application/json" hidden>
+        </label>
+        <button id="clear-all-btn" class="btn btn-secondary" type="button">🗑 Alle löschen</button>
+      </div>
+
+      <p id="status" hidden></p>
+      <p class="hint">Diese Codes werden nur in diesem Browser gespeichert (localStorage). Nutze Export, um sie zu sichern, und Import, um sie wiederherzustellen oder auf ein anderes Gerät zu übertragen.</p>
+    </div>
+
+    <p style="text-align:center; margin-top:1.5rem;">
+      <a href="index.html" class="config-link" style="opacity:0.7;">← Zurück zum Spiel</a>
+    </p>
+  </main>
+
+  <script src="storage.js"></script>
+  <script src="config.js"></script>
+</body>
+</html>
