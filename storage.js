@@ -19,12 +19,18 @@
 const STEPS_KEY = 'detektivspiel-steps-v1';
 const LEGACY_CODES_KEY = 'detektivspiel-codes-v1'; // altes Format vor der Schritte-Ansicht
 const SETTINGS_KEY = 'detektivspiel-settings-v1';
+const PROGRESS_KEY = 'detektivspiel-progress-v1';
 
 const DEFAULT_SETTINGS = {
   theme: 'noir',
   background: 'none',
   wrongSound: 'soft',
   correctSound: 'chime',
+  // Landing Page (landing.html): eigenständige Begrüßungsseite als Ziel
+  // eines QR-Codes, mit Link weiter zum eigentlichen Spiel.
+  landingTitle: '🎉 Willkommen zum Detektiv-Spiel!',
+  landingText: 'Schön, dass du dabei bist! Finde die versteckten Hinweise und gib die Codes ein, die du entdeckst, um den Fall zu lösen.',
+  landingImage: null,
   gameTitle: '🕵️ Akte des Falls',
   gameSubtitle: 'Gib den Code ein, den du gefunden hast.',
   wrongMessage: "❌ Dieser Code ist unbekannt. Versuch's nochmal.",
@@ -97,6 +103,28 @@ function loadSettings() {
 
 function saveSettings(settings) {
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+}
+
+// Fortschritt: Anzahl der bereits in Reihenfolge gelösten Rätsel-Schritte.
+// steps[progress] ist der als Nächstes erwartete Code; frühere Codes
+// gelten als "schon gelöst", spätere als "noch gesperrt".
+function loadProgress() {
+  try {
+    const raw = localStorage.getItem(PROGRESS_KEY);
+    const value = raw ? parseInt(raw, 10) : 0;
+    return Number.isFinite(value) && value >= 0 ? value : 0;
+  } catch (e) {
+    console.error('Konnte Fortschritt nicht laden:', e);
+    return 0;
+  }
+}
+
+function saveProgress(count) {
+  localStorage.setItem(PROGRESS_KEY, String(count));
+}
+
+function resetProgress() {
+  localStorage.removeItem(PROGRESS_KEY);
 }
 
 // Wandelt eine data-URL in eine blob-URL um. Wichtig für Sprachnachrichten:

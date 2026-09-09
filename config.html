@@ -25,11 +25,30 @@
 
     <div id="panel" class="card" hidden style="text-align:left;">
       <h1 style="font-size:1.4rem; text-align:center;">🗂 Spiel konfigurieren</h1>
-      <p class="hint" style="text-align:center; margin-top:0;">Aufgebaut wie das Spiel selbst: Seite 1 ist die Willkommens-Seite, jede weitere Seite ist ein Rätsel (Code + Lösung) - in der Reihenfolge, in der die Spieler sie lösen.</p>
+      <p class="hint" style="text-align:center; margin-top:0;">Aufgebaut wie das Spiel selbst: Seite 1 ist die Landing Page (QR-Code-Ziel), Seite 2 die Willkommens-Seite, jede weitere Seite ist ein Rätsel (Code + Lösung) - in der Reihenfolge, in der die Spieler sie lösen.</p>
 
       <div class="step-nav" id="step-nav"></div>
 
-      <!-- Seite 1: Willkommen -->
+      <!-- Seite 1: Landing Page (QR-Code-Ziel) -->
+      <div id="step-landing">
+        <div class="settings-section" style="margin-top:0; padding-top:0; border-top:none;">
+          <h2 class="section-title">📱 Landing Page</h2>
+          <p class="hint" style="margin-top:0;">Eigene Seite (landing.html) als Ziel für einen QR-Code - eine Begrüßung mit Link weiter zum Spiel (index.html).</p>
+
+          <label>
+            <span class="field-label" style="margin-top:0;">Überschrift</span>
+            <input type="text" id="landing-title-input" class="text-input" maxlength="60">
+          </label>
+          <label>
+            <span class="field-label">Text</span>
+            <textarea id="landing-text-input" class="text-input" rows="5"></textarea>
+          </label>
+          <p class="field-label">Optional: Bild</p>
+          <div id="landing-image-picker"></div>
+        </div>
+      </div>
+
+      <!-- Seite 2: Willkommen -->
       <div id="step-welcome">
         <div class="settings-section" style="margin-top:0; padding-top:0; border-top:none;">
           <h2 class="section-title">👋 Willkommen</h2>
@@ -184,7 +203,9 @@
           <input type="file" id="import-input" accept="application/json" hidden>
         </label>
         <button id="clear-all-btn" class="btn btn-secondary" type="button">🗑 Alle Rätsel löschen</button>
+        <button id="reset-progress-btn" class="btn btn-secondary" type="button">🔄 Spielfortschritt zurücksetzen</button>
       </div>
+      <p class="hint" style="margin-top:0.5rem;">Rätsel müssen im Spiel der Reihe nach gelöst werden. Fortschritt wird automatisch zurückgesetzt, sobald jemand das Finale erreicht - hier lässt er sich aber auch manuell zurücksetzen (z. B. nach dem Testen).</p>
 
       <p id="status" hidden></p>
       <p class="hint">Alles wird nur in diesem Browser gespeichert (localStorage). Nutze Export, um es zu sichern, und Import, um es wiederherzustellen oder auf ein anderes Gerät zu übertragen (ersetzt dabei die komplette Rätsel-Liste). Sprachnachrichten und Bilder machen den Export deutlich größer – Nachrichten kurz halten, Bilder werden beim Hochladen automatisch verkleinert.</p>

@@ -13,12 +13,21 @@ anderen Gerät, sieht er die dort angelegten Codes nicht.
 
 ## Features
 
+- **Landing Page** (`landing.html`) als Ziel für einen QR-Code: eigene
+  Begrüßungsseite mit konfigurierbarer Überschrift, Text und optional Bild,
+  plus „Los geht's“-Button weiter zum Spiel (`index.html`).
+- **Rätsel müssen der Reihe nach gelöst werden**: Ein Code wird nur
+  akzeptiert, wenn das vorherige Rätsel bereits gelöst wurde (Fortschritt
+  wird im Browser gespeichert). Sobald das Finale erreicht ist, setzt sich
+  der Fortschritt automatisch zurück, damit die nächste Gruppe am selben
+  Gerät wieder bei Rätsel 1 beginnt. Manuell zurücksetzen geht in
+  `config.html` über „🔄 Spielfortschritt zurücksetzen“.
 - **Konfiguration als Assistent, analog zum Spielablauf**: Seite 1 ist die
-  Willkommens-Seite (Texte + Darstellung), jede weitere Seite ist genau ein
-  Rätsel (Code + Lösung), die letzte Seite ist eine dedizierte **Finale-
-  Seite** (eigene Überschrift, Text und Bild) – wird automatisch zusätzlich
-  angezeigt, wenn der Code des letzten Rätsels gelöst wird. Navigation per
-  Zurück/Weiter oder über die Seiten-Punkte oben.
+  Landing Page, Seite 2 die Willkommens-Seite (Texte + Darstellung), jede
+  weitere Seite ist genau ein Rätsel (Code + Lösung), die letzte Seite ist
+  eine dedizierte **Finale-Seite** (eigene Überschrift, Text und Bild) –
+  wird automatisch zusätzlich angezeigt, wenn der Code des letzten Rätsels
+  gelöst wird. Navigation per Zurück/Weiter oder über die Seiten-Punkte oben.
 - Jeder Rätsel-Schritt kann zusätzlich ein **Bild** enthalten (z. B. für eine
   finale Abschluss-Seite mit Überschrift, Text und Bild) – wird beim
   Hochladen automatisch verkleinert/komprimiert, damit localStorage nicht
@@ -52,16 +61,17 @@ anderen Gerät, sieht er die dort angelegten Codes nicht.
 
 ## Dateien
 
+- `landing.html` – Begrüßungsseite als QR-Code-Ziel, verlinkt zu `index.html`
 - `index.html` – die Spielseite (Code eingeben → Text/Sprachnachricht anzeigen)
-- `config.html` – Verwaltungsseite als Seiten-Assistent (Willkommen + je eine
-  Seite pro Rätsel), passwortgeschützt (Standard-Passwort `geburtstag`,
-  änderbar in `config.js`)
+- `config.html` – Verwaltungsseite als Seiten-Assistent (Landing Page +
+  Willkommen + je eine Seite pro Rätsel + Finale), passwortgeschützt
+  (Standard-Passwort `geburtstag`, änderbar in `config.js`)
 - `storage.js` – gemeinsame Speicherlogik (localStorage); Rätsel werden als
   geordnete Liste von Schritten gespeichert, alte Daten (Vorgängerversion)
   werden beim ersten Laden automatisch migriert
 - `theme.js` – wendet Theme + Hintergrundbild an
 - `sounds.js` – synthetische Feedback-Töne
-- `game.js`, `config.js` – Logik der beiden Seiten
+- `game.js`, `config.js`, `landing.js` – Logik der drei Seiten
 - `style.css` – gemeinsames Design, alle 5 Themes
 - `backgrounds/*.svg` – die 5 Hintergrundbilder
 
@@ -87,15 +97,20 @@ anderen Gerät, sieht er die dort angelegten Codes nicht.
 1. Auf **genau dem Gerät**, das beim Spiel benutzt wird, die Konfigurations-
    seite öffnen: `https://<dein-user>.github.io/detektiv-spiel/config.html`
 2. Passwort eingeben (Standard: `geburtstag`, vorher in `config.js` ändern).
-3. Auf Seite 1 („👋 Willkommen“) Titel/Untertitel/Fehlermeldung, Design,
+3. Auf Seite 1 („📱 Landing Page“) Überschrift/Text/Bild für die
+   Begrüßungsseite festlegen – dorthin soll der QR-Code zeigen.
+4. Auf Seite 2 („👋 Willkommen“) Titel/Untertitel/Fehlermeldung, Design,
    Hintergrundbild und Sounds festlegen.
-4. Mit „Weiter →“ (bzw. „+ Neues Rätsel“ oder den Punkten oben) durch die
+5. Mit „Weiter →“ (bzw. „+ Neues Rätsel“ oder den Punkten oben) durch die
    Rätsel-Seiten gehen und pro Seite Code, Überschrift, Beschreibung und
-   optional eine Sprachnachricht eintragen.
-5. Über „Export (JSON)“ ein Backup herunterladen – falls der Browser-Speicher
+   optional eine Sprachnachricht eintragen. Auf der letzten Seite („🏁
+   Finale“) die Abschluss-Seite festlegen.
+6. Über „Export (JSON)“ ein Backup herunterladen – falls der Browser-Speicher
    mal gelöscht wird, lässt sich der Stand per „Import“ wiederherstellen
    (ersetzt dabei die komplette Rätsel-Liste).
-6. Zum Spielen: `index.html` (bzw. die Startseite) öffnen.
+7. QR-Code auf `https://<dein-user>.github.io/detektiv-spiel/landing.html`
+   erzeugen (z. B. mit einem beliebigen Online-QR-Generator) und ausdrucken/
+   aufstellen. Zum direkten Spielen/Testen geht auch `index.html`.
 
 ## Hinweise
 

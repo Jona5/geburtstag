@@ -181,8 +181,16 @@ h1 {
   font-weight: bold;
   cursor: pointer;
   font-family: inherit;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  text-decoration: none;
   min-height: 44px;
+  max-width: 100%;
+  white-space: normal;
+  word-break: break-word;
+  box-sizing: border-box;
 }
 
 .btn:hover { background: var(--accent-bright); }

@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   const stepNav = document.getElementById('step-nav');
+  const stepLanding = document.getElementById('step-landing');
   const stepWelcome = document.getElementById('step-welcome');
   const stepPuzzleContainer = document.getElementById('step-puzzle-container');
   const stepFinale = document.getElementById('step-finale');
@@ -35,6 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const exportBtn = document.getElementById('export-btn');
   const importInput = document.getElementById('import-input');
   const clearAllBtn = document.getElementById('clear-all-btn');
+  const resetProgressBtn = document.getElementById('reset-progress-btn');
   const statusEl = document.getElementById('status');
   let statusTimer = null;
 
@@ -279,27 +281,38 @@ document.addEventListener('DOMContentLoaded', () => {
     renderCurrentStep();
   }
 
+  // Seiten-Reihenfolge: 0 = Landing Page, 1 = Willkommen,
+  // 2..steps.length+1 = je ein Rätsel, steps.length+2 = Finale.
   function renderStepNav(steps, finaleIndex) {
     stepNav.innerHTML = '';
 
+    const landingPill = document.createElement('button');
+    landingPill.type = 'button';
+    landingPill.className = 'step-pill' + (currentStepIndex === 0 ? ' selected' : '');
+    landingPill.textContent = '📱';
+    landingPill.title = 'Seite 1: Landing Page';
+    landingPill.addEventListener('click', () => goToStep(0));
+    stepNav.appendChild(landingPill);
+
     const welcomePill = document.createElement('button');
     welcomePill.type = 'button';
-    welcomePill.className = 'step-pill' + (currentStepIndex === 0 ? ' selected' : '');
+    welcomePill.className = 'step-pill' + (currentStepIndex === 1 ? ' selected' : '');
     welcomePill.textContent = '👋';
-    welcomePill.title = 'Seite 1: Willkommen';
-    welcomePill.addEventListener('click', () => goToStep(0));
+    welcomePill.title = 'Seite 2: Willkommen';
+    welcomePill.addEventListener('click', () => goToStep(1));
     stepNav.appendChild(welcomePill);
 
     steps.forEach((step, i) => {
+      const pageIndex = i + 2;
       const pill = document.createElement('button');
       pill.type = 'button';
       let cls = 'step-pill';
-      if (currentStepIndex === i + 1) cls += ' selected';
+      if (currentStepIndex === pageIndex) cls += ' selected';
       if (!step.code) cls += ' incomplete';
       pill.className = cls;
       pill.textContent = String(i + 1);
       pill.title = step.code ? `Rätsel ${i + 1}: Code ${step.code}` : `Rätsel ${i + 1} (noch kein Code)`;
-      pill.addEventListener('click', () => goToStep(i + 1));
+      pill.addEventListener('click', () => goToStep(pageIndex));
       stepNav.appendChild(pill);
     });
 
@@ -322,21 +335,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderCurrentStep() {
     const steps = loadSteps();
-    const finaleIndex = steps.length + 1;
-    const totalPages = finaleIndex + 1; // Willkommen + Rätsel + Finale
+    const finaleIndex = steps.length + 2;
+    const totalPages = finaleIndex + 1; // Landing + Willkommen + Rätsel + Finale
     currentStepIndex = Math.max(0, Math.min(currentStepIndex, finaleIndex));
 
-    stepWelcome.hidden = currentStepIndex !== 0;
-    stepPuzzleContainer.hidden = !(currentStepIndex >= 1 && currentStepIndex <= steps.length);
+    stepLanding.hidden = currentStepIndex !== 0;
+    stepWelcome.hidden = currentStepIndex !== 1;
+    stepPuzzleContainer.hidden = !(currentStepIndex >= 2 && currentStepIndex <= steps.length + 1);
     stepFinale.hidden = currentStepIndex !== finaleIndex;
 
     if (currentStepIndex === 0) {
+      // Landing-Felder werden einmalig beim Laden befüllt (siehe unten).
+    } else if (currentStepIndex === 1) {
       refreshWelcomeUI();
     } else if (currentStepIndex === finaleIndex) {
-      // Finale-Felder werden einmalig beim Laden befüllt (siehe unten),
-      // hier ist nichts weiter zu tun.
+      // Finale-Felder werden einmalig beim Laden befüllt (siehe unten).
     } else {
-      renderPuzzleStep(steps[currentStepIndex - 1]);
+      renderPuzzleStep(steps[currentStepIndex - 2]);
     }
 
     stepIndicator.textContent = `Seite ${currentStepIndex + 1} von ${totalPages}`;
@@ -358,7 +373,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const steps = loadSteps();
     steps.push({ id: makeStepId(), code: '', title: '', description: '', audio: null, image: null });
     saveSteps(steps);
-    goToStep(steps.length);
+    goToStep(steps.length + 1);
   }
 
   function updateStep(id, changes) {
@@ -378,7 +393,7 @@ document.addEventListener('DOMContentLoaded', () => {
     steps.splice(idx, 1);
     saveSteps(steps);
     flashStatus('Gelöscht.');
-    currentStepIndex = Math.min(currentStepIndex, steps.length);
+    currentStepIndex = Math.min(currentStepIndex, steps.length + 1);
     renderCurrentStep();
   }
 
@@ -389,7 +404,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const heading = document.createElement('h2');
     heading.className = 'section-title';
-    heading.textContent = `🧩 Rätsel ${currentStepIndex}`;
+    heading.textContent = `🧩 Rätsel ${currentStepIndex - 1}`;
     stepPuzzleContainer.appendChild(heading);
     const subheading = document.createElement('p');
     subheading.className = 'hint';
@@ -504,7 +519,7 @@ document.addEventListener('DOMContentLoaded', () => {
     deleteBtn.style.marginTop = '1.5rem';
     deleteBtn.textContent = '🗑 Dieses Rätsel löschen';
     deleteBtn.addEventListener('click', () => {
-      if (!confirm(`Rätsel ${currentStepIndex} wirklich löschen?`)) return;
+      if (!confirm(`Rätsel ${currentStepIndex - 1} wirklich löschen?`)) return;
       deleteStep(step.id);
     });
     stepPuzzleContainer.appendChild(deleteBtn);
@@ -557,9 +572,15 @@ document.addEventListener('DOMContentLoaded', () => {
   clearAllBtn.addEventListener('click', () => {
     if (!confirm('Wirklich ALLE Rätsel löschen?')) return;
     saveSteps([]);
+    resetProgress();
     currentStepIndex = 0;
     renderCurrentStep();
     flashStatus('Alle Rätsel gelöscht.');
+  });
+
+  resetProgressBtn.addEventListener('click', () => {
+    resetProgress();
+    flashStatus('Spielfortschritt zurückgesetzt.');
   });
 
   function flashStatus(msg, isError = false) {
@@ -661,6 +682,34 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   populateTextSettings();
+
+  // --- Landing Page ---
+
+  const landingTitleInput = document.getElementById('landing-title-input');
+  const landingTextInput = document.getElementById('landing-text-input');
+  const landingImagePickerContainer = document.getElementById('landing-image-picker');
+
+  const initialLandingSettings = loadSettings();
+  landingTitleInput.value = initialLandingSettings.landingTitle || '';
+  landingTextInput.value = initialLandingSettings.landingText || '';
+
+  landingTitleInput.addEventListener('input', () => {
+    const settings = loadSettings();
+    settings.landingTitle = landingTitleInput.value;
+    saveSettings(settings);
+  });
+
+  landingTextInput.addEventListener('input', () => {
+    const settings = loadSettings();
+    settings.landingText = landingTextInput.value;
+    saveSettings(settings);
+  });
+
+  attachImagePicker(landingImagePickerContainer, initialLandingSettings.landingImage, (image) => {
+    const settings = loadSettings();
+    settings.landingImage = image;
+    saveSettings(settings);
+  });
 
   // --- Finale-Seite ---
 

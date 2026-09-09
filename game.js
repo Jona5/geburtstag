@@ -23,15 +23,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
   titleEl.textContent = settings.gameTitle;
   subtitleEl.textContent = settings.gameSubtitle;
-  errorEl.textContent = settings.wrongMessage;
 
   let currentVoiceUrl = null;
+  // Zählt jeden checkCode()-Aufruf hoch, damit eine noch laufende, veraltete
+  // Sprachnachrichten-Ladung (async) den Button nicht nachträglich wieder
+  // einblendet, falls inzwischen schon ein neuer Code eingegeben wurde.
+  let voiceRequestToken = 0;
+  // War die zuletzt gezeigte Auflösung das Finale? Dann setzt "Neuen Code
+  // eingeben" den Fortschritt zurück, damit die nächste Gruppe am selben
+  // Gerät wieder bei Rätsel 1 anfängt.
+  let showedFinale = false;
 
   function releaseVoiceUrl() {
     if (currentVoiceUrl) {
       URL.revokeObjectURL(currentVoiceUrl);
       currentVoiceUrl = null;
     }
+  }
+
+  function showError(message) {
+    errorEl.textContent = message;
+    errorEl.hidden = false;
+    errorEl.classList.remove('shake');
+    void errorEl.offsetWidth; // Reflow erzwingen, damit die Animation neu startet
+    errorEl.classList.add('shake');
   }
 
   resultAudio.addEventListener('error', () => {
@@ -59,6 +74,10 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   resetBtn.addEventListener('click', () => {
+    if (showedFinale) {
+      resetProgress();
+      showedFinale = false;
+    }
     input.value = '';
     resultAudio.pause();
     resultAudio.removeAttribute('src');
@@ -85,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ab. Der Umweg über blob: ist nötig, weil Safari fragmentiertes MP3/MP4
   // (so nimmt MediaRecorder dort auf) von einer data-URL nicht abspielen
   // kann - von einer blob-URL desselben Inhalts aber schon.
-  async function showVoiceMessage(dataUrl) {
+  async function showVoiceMessage(dataUrl, token) {
     releaseVoiceUrl();
     try {
       currentVoiceUrl = await dataUrlToObjectUrl(dataUrl);
@@ -93,6 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error('Sprachnachricht konnte nicht geladen werden:', err);
       currentVoiceUrl = dataUrl; // Fallback: direkt versuchen
     }
+    if (token !== voiceRequestToken) return; // inzwischen wurde schon ein anderer Code eingegeben
     resultAudio.src = currentVoiceUrl;
     resultAudio.load();
     replayVoiceBtn.hidden = false;
@@ -103,63 +123,81 @@ document.addEventListener('DOMContentLoaded', () => {
     const code = input.value.trim();
     if (!code) return;
 
+    voiceRequestToken += 1;
+
     const steps = loadSteps();
     const currentSettings = loadSettings();
     const stepIndex = steps.findIndex((s) => s.code === code);
-    const step = stepIndex === -1 ? null : steps[stepIndex];
+    const progress = loadProgress();
 
-    if (step) {
-      const title = step.title || '';
-      resultTitle.textContent = title;
-      resultTitle.hidden = !title;
-      resultText.textContent = step.description || '';
-
-      if (step.image) {
-        resultImage.src = step.image;
-        resultImage.hidden = false;
-      } else {
-        resultImage.hidden = true;
-        resultImage.removeAttribute('src');
-      }
-
-      // Letzter Rätsel-Schritt: zusätzlich die dedizierte Finale-Seite zeigen.
-      if (stepIndex === steps.length - 1) {
-        endTitle.textContent = currentSettings.endTitle || '';
-        endTitle.hidden = !currentSettings.endTitle;
-        endText.textContent = currentSettings.endText || '';
-        if (currentSettings.endImage) {
-          endImage.src = currentSettings.endImage;
-          endImage.hidden = false;
-        } else {
-          endImage.hidden = true;
-          endImage.removeAttribute('src');
-        }
-        resultFinale.hidden = false;
-      } else {
-        resultFinale.hidden = true;
-      }
-
-      const audioSrc = step.audio;
-      if (audioSrc) {
-        showVoiceMessage(audioSrc);
-      } else {
-        resultAudio.pause();
-        resultAudio.removeAttribute('src');
-        releaseVoiceUrl();
-        replayVoiceBtn.hidden = true;
-        playCorrectSound(currentSettings.correctSound);
-      }
-
-      entryEl.hidden = true;
-      errorEl.hidden = true;
-      resultEl.hidden = false;
-    } else {
-      errorEl.hidden = false;
-      errorEl.classList.remove('shake');
-      void errorEl.offsetWidth; // Reflow erzwingen, damit die Animation neu startet
-      errorEl.classList.add('shake');
+    if (stepIndex === -1) {
+      showError(currentSettings.wrongMessage);
       playWrongSound(currentSettings.wrongSound);
+      return;
     }
+
+    if (stepIndex > progress) {
+      showError('🔒 Noch nicht so weit! Löse erst die vorherigen Rätsel.');
+      playWrongSound(currentSettings.wrongSound);
+      return;
+    }
+
+    // stepIndex <= progress: gültiger, schon erreichbarer Code. Fortschritt
+    // nur erhöhen, wenn es tatsächlich der als Nächstes erwartete ist -
+    // ein bereits gelöster Code zeigt einfach wieder seine Auflösung.
+    if (stepIndex === progress) {
+      saveProgress(progress + 1);
+    }
+
+    const step = steps[stepIndex];
+    const title = step.title || '';
+    resultTitle.textContent = title;
+    resultTitle.hidden = !title;
+    resultText.textContent = step.description || '';
+
+    if (step.image) {
+      resultImage.src = step.image;
+      resultImage.hidden = false;
+    } else {
+      resultImage.hidden = true;
+      resultImage.removeAttribute('src');
+    }
+
+    // Letzter Rätsel-Schritt: zusätzlich die dedizierte Finale-Seite zeigen.
+    showedFinale = stepIndex === steps.length - 1;
+    if (showedFinale) {
+      endTitle.textContent = currentSettings.endTitle || '';
+      endTitle.hidden = !currentSettings.endTitle;
+      endText.textContent = currentSettings.endText || '';
+      if (currentSettings.endImage) {
+        endImage.src = currentSettings.endImage;
+        endImage.hidden = false;
+      } else {
+        endImage.hidden = true;
+        endImage.removeAttribute('src');
+      }
+      resultFinale.hidden = false;
+      resetBtn.textContent = '🔄 Neues Spiel starten';
+    } else {
+      resultFinale.hidden = true;
+      const nextName = title || `Rätsel ${stepIndex + 2}`;
+      resetBtn.textContent = `Weiter mit dem Rätsel: ${nextName}`;
+    }
+
+    const audioSrc = step.audio;
+    if (audioSrc) {
+      showVoiceMessage(audioSrc, voiceRequestToken);
+    } else {
+      resultAudio.pause();
+      resultAudio.removeAttribute('src');
+      releaseVoiceUrl();
+      replayVoiceBtn.hidden = true;
+      playCorrectSound(currentSettings.correctSound);
+    }
+
+    entryEl.hidden = true;
+    errorEl.hidden = true;
+    resultEl.hidden = false;
   }
 
   input.focus();
