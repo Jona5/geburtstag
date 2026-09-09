@@ -16,7 +16,7 @@
     <p class="subtitle" id="game-subtitle">Gib den Code ein, den du gefunden hast.</p>
 
     <section id="entry" class="card">
-      <input type="text" id="code-input" maxlength="4" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" placeholder="••••" aria-label="Code">
+      <input type="text" id="code-input" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" placeholder="Code eingeben..." aria-label="Code">
       <div class="btn-row">
         <button id="check-btn" class="btn">Prüfen</button>
       </div>
@@ -25,8 +25,17 @@
 
     <section id="result" class="card" hidden>
       <h2 id="result-title" class="result-title" hidden></h2>
+      <img id="result-image" class="result-image" hidden>
       <p id="result-text" class="result-text"></p>
       <audio id="result-audio" hidden></audio>
+
+      <div id="result-finale" hidden>
+        <hr class="finale-divider">
+        <h2 id="end-title" class="result-title"></h2>
+        <img id="end-image" class="result-image" hidden>
+        <p id="end-text" class="result-text"></p>
+      </div>
+
       <div class="btn-row">
         <button id="replay-voice-btn" class="btn btn-secondary" type="button" hidden>🎙️ Nachricht wiederholen</button>
         <button id="reset-btn" class="btn btn-secondary">Neuen Code eingeben</button>

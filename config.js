@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const stepNav = document.getElementById('step-nav');
   const stepWelcome = document.getElementById('step-welcome');
   const stepPuzzleContainer = document.getElementById('step-puzzle-container');
+  const stepFinale = document.getElementById('step-finale');
   const prevStepBtn = document.getElementById('prev-step-btn');
   const nextStepBtn = document.getElementById('next-step-btn');
   const stepIndicator = document.getElementById('step-indicator');
@@ -175,6 +176,102 @@ document.addEventListener('DOMContentLoaded', () => {
     renderIdle();
   }
 
+  // --- Bild-Upload (gemeinsam für alle Rätsel-Seiten) ---
+
+  // Verkleinert/komprimiert ein ausgewähltes Bild vor dem Speichern, damit
+  // localStorage (typisch 5-10 MB pro Seite) nicht überläuft - Fotos direkt
+  // vom Handy können sonst mehrere MB groß sein.
+  function resizeImageFile(file, maxDim = 1200, quality = 0.82) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const objectUrl = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(objectUrl);
+        let { width, height } = img;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round(height * (maxDim / width));
+            width = maxDim;
+          } else {
+            width = Math.round(width * (maxDim / height));
+            height = maxDim;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = (e) => {
+        URL.revokeObjectURL(objectUrl);
+        reject(e);
+      };
+      img.src = objectUrl;
+    });
+  }
+
+  // Baut eine kleine Auswählen/Vorschau/Löschen-UI in `container`.
+  // `initialImage` ist eine vorhandene data-URL oder null.
+  // `onChange(dataUrlOrNull)` wird bei jeder Änderung aufgerufen.
+  function attachImagePicker(container, initialImage, onChange) {
+    let image = initialImage || null;
+
+    function render() {
+      container.innerHTML = '';
+      const row = document.createElement('div');
+      row.className = 'recorder-row';
+
+      const pickLabel = document.createElement('label');
+      pickLabel.className = 'btn btn-secondary';
+      pickLabel.style.cursor = 'pointer';
+      pickLabel.textContent = image ? '🖼️ Anderes Bild wählen' : '🖼️ Bild wählen';
+
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = 'image/*';
+      fileInput.hidden = true;
+      fileInput.addEventListener('change', async () => {
+        const file = fileInput.files[0];
+        fileInput.value = '';
+        if (!file) return;
+        try {
+          image = await resizeImageFile(file);
+          onChange(image);
+          render();
+        } catch (err) {
+          console.error('Bild konnte nicht verarbeitet werden:', err);
+          alert('Dieses Bild konnte nicht geladen werden.');
+        }
+      });
+      pickLabel.appendChild(fileInput);
+      row.appendChild(pickLabel);
+
+      if (image) {
+        const preview = document.createElement('img');
+        preview.className = 'image-preview';
+        preview.src = image;
+        row.appendChild(preview);
+
+        const clearBtn = document.createElement('button');
+        clearBtn.type = 'button';
+        clearBtn.className = 'btn btn-secondary';
+        clearBtn.title = 'Bild entfernen';
+        clearBtn.textContent = '🗑';
+        clearBtn.addEventListener('click', () => {
+          image = null;
+          onChange(null);
+          render();
+        });
+        row.appendChild(clearBtn);
+      }
+
+      container.appendChild(row);
+    }
+
+    render();
+  }
+
   // --- Navigation zwischen den Seiten ---
 
   function goToStep(index) {
@@ -182,7 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderCurrentStep();
   }
 
-  function renderStepNav(steps) {
+  function renderStepNav(steps, finaleIndex) {
     stepNav.innerHTML = '';
 
     const welcomePill = document.createElement('button');
@@ -213,27 +310,40 @@ document.addEventListener('DOMContentLoaded', () => {
     addPill.title = 'Neues Rätsel hinzufügen';
     addPill.addEventListener('click', addNewStep);
     stepNav.appendChild(addPill);
+
+    const finalePill = document.createElement('button');
+    finalePill.type = 'button';
+    finalePill.className = 'step-pill' + (currentStepIndex === finaleIndex ? ' selected' : '');
+    finalePill.textContent = '🏁';
+    finalePill.title = 'Letzte Seite: Finale';
+    finalePill.addEventListener('click', () => goToStep(finaleIndex));
+    stepNav.appendChild(finalePill);
   }
 
   function renderCurrentStep() {
     const steps = loadSteps();
-    const totalPages = steps.length + 1;
-    currentStepIndex = Math.max(0, Math.min(currentStepIndex, steps.length));
+    const finaleIndex = steps.length + 1;
+    const totalPages = finaleIndex + 1; // Willkommen + Rätsel + Finale
+    currentStepIndex = Math.max(0, Math.min(currentStepIndex, finaleIndex));
 
     stepWelcome.hidden = currentStepIndex !== 0;
-    stepPuzzleContainer.hidden = currentStepIndex === 0;
+    stepPuzzleContainer.hidden = !(currentStepIndex >= 1 && currentStepIndex <= steps.length);
+    stepFinale.hidden = currentStepIndex !== finaleIndex;
 
     if (currentStepIndex === 0) {
       refreshWelcomeUI();
+    } else if (currentStepIndex === finaleIndex) {
+      // Finale-Felder werden einmalig beim Laden befüllt (siehe unten),
+      // hier ist nichts weiter zu tun.
     } else {
       renderPuzzleStep(steps[currentStepIndex - 1]);
     }
 
     stepIndicator.textContent = `Seite ${currentStepIndex + 1} von ${totalPages}`;
     prevStepBtn.disabled = currentStepIndex === 0;
-    nextStepBtn.textContent = currentStepIndex === steps.length ? '+ Neues Rätsel' : 'Weiter →';
+    nextStepBtn.disabled = currentStepIndex === finaleIndex;
 
-    renderStepNav(steps);
+    renderStepNav(steps, finaleIndex);
   }
 
   prevStepBtn.addEventListener('click', () => {
@@ -241,17 +351,12 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   nextStepBtn.addEventListener('click', () => {
-    const steps = loadSteps();
-    if (currentStepIndex === steps.length) {
-      addNewStep();
-    } else {
-      goToStep(currentStepIndex + 1);
-    }
+    goToStep(currentStepIndex + 1);
   });
 
   function addNewStep() {
     const steps = loadSteps();
-    steps.push({ id: makeStepId(), code: '', title: '', description: '', audio: null });
+    steps.push({ id: makeStepId(), code: '', title: '', description: '', audio: null, image: null });
     saveSteps(steps);
     goToStep(steps.length);
   }
@@ -280,7 +385,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- Seite für ein einzelnes Rätsel ---
 
   function renderPuzzleStep(step) {
-    const codeLength = loadSettings().codeLength || 4;
     stepPuzzleContainer.innerHTML = '';
 
     const heading = document.createElement('h2');
@@ -298,18 +402,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const codeLabelSpan = document.createElement('span');
     codeLabelSpan.className = 'field-label';
     codeLabelSpan.style.marginTop = '0';
-    codeLabelSpan.textContent = `Code (${codeLength} Zeichen)`;
+    codeLabelSpan.textContent = 'Code (beliebige Länge)';
     codeLabel.appendChild(codeLabelSpan);
 
     const codeInput = document.createElement('input');
     codeInput.type = 'text';
     codeInput.className = 'text-input';
-    codeInput.maxLength = codeLength;
     codeInput.autocapitalize = 'characters';
     codeInput.autocorrect = 'off';
     codeInput.spellcheck = false;
     codeInput.value = step.code;
-    codeInput.placeholder = 'AB12'.slice(0, codeLength).padEnd(codeLength, 'X');
+    codeInput.placeholder = 'z. B. AB12 oder SESAMOEFFNEDICH';
     codeLabel.appendChild(codeInput);
     stepPuzzleContainer.appendChild(codeLabel);
 
@@ -323,11 +426,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const newCode = codeInput.value.trim().toUpperCase();
       codeInput.value = newCode;
 
-      if (newCode && newCode.length !== codeLength) {
-        codeError.textContent = `Der Code muss aus genau ${codeLength} Zeichen bestehen.`;
-        codeError.hidden = false;
-        return;
-      }
       const steps = loadSteps();
       const duplicate = newCode && steps.some((s) => s.id !== step.id && s.code === newCode);
       if (duplicate) {
@@ -374,6 +472,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     descLabel.appendChild(descTextarea);
     stepPuzzleContainer.appendChild(descLabel);
+
+    // Bild
+    const imageLabel = document.createElement('p');
+    imageLabel.className = 'field-label';
+    imageLabel.textContent = 'Optional: Bild (z. B. für die letzte Seite/das Finale)';
+    stepPuzzleContainer.appendChild(imageLabel);
+
+    const imageContainer = document.createElement('div');
+    stepPuzzleContainer.appendChild(imageContainer);
+    attachImagePicker(imageContainer, step.image, (image) => {
+      updateStep(step.id, { image });
+    });
 
     // Sprachnachricht
     const recorderLabel = document.createElement('p');
@@ -430,6 +540,7 @@ document.addEventListener('DOMContentLoaded', () => {
           title: (item && item.title) || '',
           description: (item && item.description) || '',
           audio: (item && item.audio) || null,
+          image: (item && item.image) || null,
         }));
         saveSteps(steps);
         currentStepIndex = 0;
@@ -463,11 +574,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function refreshWelcomeUI() {
     const settings = loadSettings();
-    const codeLength = settings.codeLength || 4;
 
-    document.querySelectorAll('.length-btn').forEach((btn) => {
-      btn.classList.toggle('selected', Number(btn.dataset.length) === codeLength);
-    });
     document.querySelectorAll('.theme-swatch').forEach((btn) => {
       btn.classList.toggle('selected', btn.dataset.theme === settings.theme);
     });
@@ -481,15 +588,6 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.classList.toggle('selected', btn.dataset.sound === settings.correctSound);
     });
   }
-
-  document.querySelectorAll('.length-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const settings = loadSettings();
-      settings.codeLength = Number(btn.dataset.length);
-      saveSettings(settings);
-      refreshWelcomeUI();
-    });
-  });
 
   document.querySelectorAll('.theme-swatch').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -563,4 +661,32 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   populateTextSettings();
+
+  // --- Finale-Seite ---
+
+  const endTitleInput = document.getElementById('end-title-input');
+  const endTextInput = document.getElementById('end-text-input');
+  const endImagePickerContainer = document.getElementById('end-image-picker');
+
+  const initialSettings = loadSettings();
+  endTitleInput.value = initialSettings.endTitle || '';
+  endTextInput.value = initialSettings.endText || '';
+
+  endTitleInput.addEventListener('input', () => {
+    const settings = loadSettings();
+    settings.endTitle = endTitleInput.value;
+    saveSettings(settings);
+  });
+
+  endTextInput.addEventListener('input', () => {
+    const settings = loadSettings();
+    settings.endText = endTextInput.value;
+    saveSettings(settings);
+  });
+
+  attachImagePicker(endImagePickerContainer, initialSettings.endImage, (image) => {
+    const settings = loadSettings();
+    settings.endImage = image;
+    saveSettings(settings);
+  });
 });

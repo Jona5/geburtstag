@@ -1,8 +1,9 @@
 # Detektiv-Spiel
 
 Eine ganz einfache statische Webseite (kein Server, kein Build-Schritt) für
-ein Detektiv-/Rätselspiel: Spieler geben einen 4-stelligen Code ein, den sie
-irgendwo gefunden haben, und bekommen dazu einen Text angezeigt.
+ein Detektiv-/Rätselspiel: Spieler geben einen Code beliebiger Länge ein, den
+sie irgendwo gefunden haben, und bekommen dazu die Lösung (Überschrift, Text,
+optional Bild und Sprachnachricht) angezeigt.
 
 Alle Codes und ihre Texte werden im `localStorage` des Browsers gespeichert,
 in dem sie über die Konfigurationsseite angelegt wurden. Das Spiel ist daher
@@ -14,14 +15,22 @@ anderen Gerät, sieht er die dort angelegten Codes nicht.
 
 - **Konfiguration als Assistent, analog zum Spielablauf**: Seite 1 ist die
   Willkommens-Seite (Texte + Darstellung), jede weitere Seite ist genau ein
-  Rätsel (Code + Lösung) – in der Reihenfolge, in der die Spieler sie lösen.
-  Navigation per Zurück/Weiter oder über die Seiten-Punkte oben.
-- Code mit **konfigurierbarer Länge** (3–8 **beliebige Zeichen**, nicht nur
-  Ziffern, Standard 4) → hinterlegte **Überschrift + Beschreibung des
-  nächsten Rätsels** (und optional eine im Browser aufgenommene
-  Sprachnachricht). Codes werden beim Eingeben/Anlegen automatisch in
-  Großbuchstaben umgewandelt, damit Groß-/Kleinschreibung beim Tippen keine
-  Rolle spielt.
+  Rätsel (Code + Lösung), die letzte Seite ist eine dedizierte **Finale-
+  Seite** (eigene Überschrift, Text und Bild) – wird automatisch zusätzlich
+  angezeigt, wenn der Code des letzten Rätsels gelöst wird. Navigation per
+  Zurück/Weiter oder über die Seiten-Punkte oben.
+- Jeder Rätsel-Schritt kann zusätzlich ein **Bild** enthalten (z. B. für eine
+  finale Abschluss-Seite mit Überschrift, Text und Bild) – wird beim
+  Hochladen automatisch verkleinert/komprimiert, damit localStorage nicht
+  überläuft.
+- Codes dürfen **beliebige Zeichen und beliebige Länge** haben (kein festes
+  Format, jedes Rätsel kann einen anders langen Code haben) → hinterlegte
+  **Überschrift + Beschreibung des nächsten Rätsels** (und optional eine im
+  Browser aufgenommene Sprachnachricht). Codes werden beim Eingeben/Anlegen
+  automatisch in Großbuchstaben umgewandelt, damit Groß-/Kleinschreibung
+  beim Tippen keine Rolle spielt. Da die Länge nicht mehr feststeht, wird
+  ein Code im Spiel per Enter oder „Prüfen“-Button bestätigt (kein
+  automatisches Absenden mehr).
 - Konfigurierbare Texte der Rätsel-Seite (Titel, Untertitel, Meldung bei
   falschem Code)
 - 5 auswählbare Farb-Themes (Film Noir, Neon Cyber, Pergament, Blutrot,
@@ -78,9 +87,8 @@ anderen Gerät, sieht er die dort angelegten Codes nicht.
 1. Auf **genau dem Gerät**, das beim Spiel benutzt wird, die Konfigurations-
    seite öffnen: `https://<dein-user>.github.io/detektiv-spiel/config.html`
 2. Passwort eingeben (Standard: `geburtstag`, vorher in `config.js` ändern).
-3. Auf Seite 1 („👋 Willkommen“) Titel/Untertitel/Fehlermeldung, Code-Länge,
-   Design, Hintergrundbild und Sounds festlegen – die Code-Länge idealerweise
-   zuerst, sie gilt für alle danach angelegten Rätsel.
+3. Auf Seite 1 („👋 Willkommen“) Titel/Untertitel/Fehlermeldung, Design,
+   Hintergrundbild und Sounds festlegen.
 4. Mit „Weiter →“ (bzw. „+ Neues Rätsel“ oder den Punkten oben) durch die
    Rätsel-Seiten gehen und pro Seite Code, Überschrift, Beschreibung und
    optional eine Sprachnachricht eintragen.
@@ -96,8 +104,8 @@ anderen Gerät, sieht er die dort angelegten Codes nicht.
   kann den Quelltext lesen.
 - Privates Browsing / Löschen der Browserdaten löscht auch die Codes –
   vorher exportieren!
-- Ein Code muss aus genau 4 Ziffern bestehen; der Text darf beliebig lang
-  sein und Zeilenumbrüche enthalten.
+- Ein Code darf beliebige Zeichen und beliebige Länge haben; der Text darf
+  ebenfalls beliebig lang sein und Zeilenumbrüche enthalten.
 - Sprachnachrichten benötigen Mikrofon-Zugriff (Browser fragt beim ersten
   Aufnehmen danach) und eine sichere Verbindung – auf `https://…github.io`
   und `localhost` funktioniert das, auf `http://` nicht.

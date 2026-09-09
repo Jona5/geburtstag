@@ -52,17 +52,6 @@
         <div class="settings-section">
           <h2 class="section-title">🎨 Darstellung</h2>
 
-          <p class="field-label">Code-Länge (Anzahl Zeichen)</p>
-          <div class="swatch-row">
-            <button type="button" class="length-btn" data-length="3">3</button>
-            <button type="button" class="length-btn" data-length="4">4</button>
-            <button type="button" class="length-btn" data-length="5">5</button>
-            <button type="button" class="length-btn" data-length="6">6</button>
-            <button type="button" class="length-btn" data-length="7">7</button>
-            <button type="button" class="length-btn" data-length="8">8</button>
-          </div>
-          <p class="hint" style="margin-top:0.4rem;">Gilt für alle Rätsel-Codes und für das Eingabefeld im Spiel. Ändere die Länge idealerweise, bevor du Rätsel anlegst.</p>
-
           <p class="field-label">Design</p>
           <div class="swatch-row">
             <button type="button" class="theme-swatch" data-theme="noir">
@@ -163,6 +152,25 @@
       <!-- Seite 2+: je ein Rätsel -->
       <div id="step-puzzle-container" hidden></div>
 
+      <!-- Letzte Seite: Finale -->
+      <div id="step-finale" hidden>
+        <div class="settings-section" style="margin-top:0; padding-top:0; border-top:none;">
+          <h2 class="section-title">🏁 Finale</h2>
+          <p class="hint" style="margin-top:0;">Wird zusätzlich angezeigt, wenn der Code des letzten Rätsels richtig eingegeben wird - die Belohnungs-/Abschluss-Seite für die Spieler.</p>
+
+          <label>
+            <span class="field-label" style="margin-top:0;">Überschrift</span>
+            <input type="text" id="end-title-input" class="text-input" maxlength="60" placeholder="z. B. 🎉 Fall gelöst!">
+          </label>
+          <label>
+            <span class="field-label">Text</span>
+            <textarea id="end-text-input" class="text-input" rows="4" placeholder="Herzlichen Glückwunsch, Detektiv! Du hast den Fall gelöst..."></textarea>
+          </label>
+          <p class="field-label">Optional: Bild</p>
+          <div id="end-image-picker"></div>
+        </div>
+      </div>
+
       <div class="step-footer">
         <button id="prev-step-btn" class="btn btn-secondary" type="button">← Zurück</button>
         <span id="step-indicator" class="step-indicator"></span>
@@ -179,7 +187,7 @@
       </div>
 
       <p id="status" hidden></p>
-      <p class="hint">Alles wird nur in diesem Browser gespeichert (localStorage). Nutze Export, um es zu sichern, und Import, um es wiederherzustellen oder auf ein anderes Gerät zu übertragen (ersetzt dabei die komplette Rätsel-Liste). Sprachnachrichten machen den Export deutlich größer – kurz halten.</p>
+      <p class="hint">Alles wird nur in diesem Browser gespeichert (localStorage). Nutze Export, um es zu sichern, und Import, um es wiederherzustellen oder auf ein anderes Gerät zu übertragen (ersetzt dabei die komplette Rätsel-Liste). Sprachnachrichten und Bilder machen den Export deutlich größer – Nachrichten kurz halten, Bilder werden beim Hochladen automatisch verkleinert.</p>
     </div>
 
     <p style="text-align:center; margin-top:1.5rem;">

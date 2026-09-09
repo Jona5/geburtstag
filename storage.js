@@ -28,7 +28,11 @@ const DEFAULT_SETTINGS = {
   gameTitle: '🕵️ Akte des Falls',
   gameSubtitle: 'Gib den Code ein, den du gefunden hast.',
   wrongMessage: "❌ Dieser Code ist unbekannt. Versuch's nochmal.",
-  codeLength: 4,
+  // Dedizierte Abschluss-Seite: wird zusätzlich angezeigt, wenn der Code
+  // des letzten konfigurierten Rätsel-Schritts richtig eingegeben wird.
+  endTitle: '🎉 Fall gelöst!',
+  endText: 'Herzlichen Glückwunsch, Detektiv! Du hast alle Rätsel gelöst und den Fall abgeschlossen.',
+  endImage: null,
 };
 
 function makeStepId() {
@@ -55,6 +59,7 @@ function migrateLegacyCodes() {
           ? (entry.description !== undefined ? entry.description : (entry.text || ''))
           : (entry || ''),
         audio: isObj ? (entry.audio || null) : null,
+        image: isObj ? (entry.image || null) : null,
       };
     });
 

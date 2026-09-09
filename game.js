@@ -7,22 +7,23 @@ document.addEventListener('DOMContentLoaded', () => {
   const replayVoiceBtn = document.getElementById('replay-voice-btn');
   const resultEl = document.getElementById('result');
   const resultTitle = document.getElementById('result-title');
+  const resultImage = document.getElementById('result-image');
   const resultText = document.getElementById('result-text');
   const resultAudio = document.getElementById('result-audio');
+  const resultFinale = document.getElementById('result-finale');
+  const endTitle = document.getElementById('end-title');
+  const endImage = document.getElementById('end-image');
+  const endText = document.getElementById('end-text');
   const errorEl = document.getElementById('error');
   const entryEl = document.getElementById('entry');
   const titleEl = document.getElementById('game-title');
   const subtitleEl = document.getElementById('game-subtitle');
 
   const settings = loadSettings();
-  const codeLength = settings.codeLength || 4;
 
   titleEl.textContent = settings.gameTitle;
   subtitleEl.textContent = settings.gameSubtitle;
   errorEl.textContent = settings.wrongMessage;
-
-  input.maxLength = codeLength;
-  input.placeholder = '•'.repeat(codeLength);
 
   let currentVoiceUrl = null;
 
@@ -40,14 +41,11 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   input.addEventListener('input', () => {
-    // Codes sind nicht auf Ziffern beschränkt, werden aber einheitlich in
-    // Großbuchstaben verglichen - sonst hängt es an Groß-/Kleinschreibung
-    // beim Tippen (Autokorrektur, mobile Tastaturen, ...).
-    input.value = input.value.toUpperCase().slice(0, codeLength);
+    // Codes sind nicht auf Ziffern und keine feste Länge beschränkt, werden
+    // aber einheitlich in Großbuchstaben verglichen - sonst hängt es an
+    // Groß-/Kleinschreibung beim Tippen (Autokorrektur, mobile Tastaturen).
+    input.value = input.value.toUpperCase();
     errorEl.hidden = true;
-    if (input.value.length === codeLength) {
-      checkCode();
-    }
   });
 
   input.addEventListener('keydown', (e) => {
@@ -66,6 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
     resultAudio.removeAttribute('src');
     releaseVoiceUrl();
     replayVoiceBtn.hidden = true;
+    resultFinale.hidden = true;
     resultEl.hidden = true;
     entryEl.hidden = false;
     errorEl.hidden = true;
@@ -102,17 +101,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function checkCode() {
     const code = input.value.trim();
-    if (code.length !== codeLength) return;
+    if (!code) return;
 
     const steps = loadSteps();
     const currentSettings = loadSettings();
-    const step = steps.find((s) => s.code === code);
+    const stepIndex = steps.findIndex((s) => s.code === code);
+    const step = stepIndex === -1 ? null : steps[stepIndex];
 
     if (step) {
       const title = step.title || '';
       resultTitle.textContent = title;
       resultTitle.hidden = !title;
       resultText.textContent = step.description || '';
+
+      if (step.image) {
+        resultImage.src = step.image;
+        resultImage.hidden = false;
+      } else {
+        resultImage.hidden = true;
+        resultImage.removeAttribute('src');
+      }
+
+      // Letzter Rätsel-Schritt: zusätzlich die dedizierte Finale-Seite zeigen.
+      if (stepIndex === steps.length - 1) {
+        endTitle.textContent = currentSettings.endTitle || '';
+        endTitle.hidden = !currentSettings.endTitle;
+        endText.textContent = currentSettings.endText || '';
+        if (currentSettings.endImage) {
+          endImage.src = currentSettings.endImage;
+          endImage.hidden = false;
+        } else {
+          endImage.hidden = true;
+          endImage.removeAttribute('src');
+        }
+        resultFinale.hidden = false;
+      } else {
+        resultFinale.hidden = true;
+      }
 
       const audioSrc = step.audio;
       if (audioSrc) {
