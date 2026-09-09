@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500">
+  <defs>
+    <filter id="orbBlur" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="70"/>
+    </filter>
+  </defs>
+  <rect width="800" height="500" fill="#08090f"/>
+  <circle cx="200" cy="150" r="170" fill="#22d3ee" opacity="0.35" filter="url(#orbBlur)"/>
+  <circle cx="620" cy="360" r="200" fill="#a855f7" opacity="0.3" filter="url(#orbBlur)"/>
+</svg>

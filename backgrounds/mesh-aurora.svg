@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500">
+  <defs>
+    <filter id="auroraBlur" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="80"/>
+    </filter>
+  </defs>
+  <rect width="800" height="500" fill="#0b0b16"/>
+  <g filter="url(#auroraBlur)">
+    <circle cx="150" cy="120" r="160" fill="#7c3aed" opacity="0.55"/>
+    <circle cx="620" cy="90" r="140" fill="#06b6d4" opacity="0.5"/>
+    <circle cx="680" cy="380" r="180" fill="#db2777" opacity="0.45"/>
+    <circle cx="180" cy="420" r="150" fill="#2563eb" opacity="0.5"/>
+    <circle cx="420" cy="260" r="170" fill="#22d3ee" opacity="0.3"/>
+  </g>
+</svg>

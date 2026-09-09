@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500">
+  <defs>
+    <radialGradient id="paperVign" cx="50%" cy="45%" r="75%">
+      <stop offset="0%" stop-color="#f3e9cf"/>
+      <stop offset="100%" stop-color="#d8c79f"/>
+    </radialGradient>
+    <filter id="paperGrain">
+      <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.06 0"/>
+    </filter>
+  </defs>
+  <rect width="800" height="500" fill="url(#paperVign)"/>
+  <rect width="800" height="500" filter="url(#paperGrain)"/>
+  <ellipse cx="630" cy="110" rx="95" ry="60" fill="#8a6a3f" opacity="0.12"/>
+  <ellipse cx="140" cy="410" rx="75" ry="48" fill="#8a6a3f" opacity="0.1"/>
+  <ellipse cx="90" cy="80" rx="40" ry="25" fill="#8a6a3f" opacity="0.08"/>
+</svg>

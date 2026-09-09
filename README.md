@@ -10,14 +10,51 @@ für den Einsatz auf **einem gemeinsamen Gerät** gedacht (Tablet/Handy/Laptop,
 das für alle Spieler benutzt wird) – öffnet jemand die Seite auf einem
 anderen Gerät, sieht er die dort angelegten Codes nicht.
 
+## Features
+
+- **Konfiguration als Assistent, analog zum Spielablauf**: Seite 1 ist die
+  Willkommens-Seite (Texte + Darstellung), jede weitere Seite ist genau ein
+  Rätsel (Code + Lösung) – in der Reihenfolge, in der die Spieler sie lösen.
+  Navigation per Zurück/Weiter oder über die Seiten-Punkte oben.
+- Code mit **konfigurierbarer Länge** (3–8 **beliebige Zeichen**, nicht nur
+  Ziffern, Standard 4) → hinterlegte **Überschrift + Beschreibung des
+  nächsten Rätsels** (und optional eine im Browser aufgenommene
+  Sprachnachricht). Codes werden beim Eingeben/Anlegen automatisch in
+  Großbuchstaben umgewandelt, damit Groß-/Kleinschreibung beim Tippen keine
+  Rolle spielt.
+- Konfigurierbare Texte der Rätsel-Seite (Titel, Untertitel, Meldung bei
+  falschem Code)
+- 5 auswählbare Farb-Themes (Film Noir, Neon Cyber, Pergament, Blutrot,
+  Waldgrün)
+- 10 auswählbare Hintergrundbilder: 5 Vintage-Detektiv-Motive (Korkbrett,
+  altes Papier, neblige Stadt, Blaupause, Tatort-Absperrband) und 5 moderne
+  Gradient-/Glow-Hintergründe (Aurora, Dusk, Punktraster, Glow Orbs, Wellen)
+  – alles als SVGs im Repo, keine externen Bilder
+- 6 auswählbare Töne für falsche Codes, 6 für richtige Codes – synthetisch
+  per Web Audio API erzeugt (gefilterte Sinus-/Dreieckstöne statt roher
+  8-Bit-Wellen, damit es moderner klingt), keine Audio-Dateien nötig
+- Auf der Ergebnisseite lässt sich eine Sprachnachricht per Button erneut
+  abspielen (Erfolgston läuft nur, wenn keine Sprachnachricht hinterlegt ist)
+- Sprachnachrichten: pro Code kann in `config.html` direkt über das
+  Mikrofon eine Nachricht aufgenommen werden, die beim richtigen Code
+  automatisch abgespielt wird
+- Für Mobilgeräte optimiert (große Touch-Ziele, kein iOS-Auto-Zoom bei
+  Eingabefeldern, Safe-Area-Unterstützung für Geräte mit Notch)
+
 ## Dateien
 
-- `index.html` – die Spielseite (Code eingeben → Text anzeigen)
-- `config.html` – Verwaltungsseite zum Anlegen/Bearbeiten der Codes,
-  passwortgeschützt (Standard-Passwort `geburtstag`, änderbar in `config.js`)
-- `storage.js` – gemeinsame Speicherlogik (localStorage)
+- `index.html` – die Spielseite (Code eingeben → Text/Sprachnachricht anzeigen)
+- `config.html` – Verwaltungsseite als Seiten-Assistent (Willkommen + je eine
+  Seite pro Rätsel), passwortgeschützt (Standard-Passwort `geburtstag`,
+  änderbar in `config.js`)
+- `storage.js` – gemeinsame Speicherlogik (localStorage); Rätsel werden als
+  geordnete Liste von Schritten gespeichert, alte Daten (Vorgängerversion)
+  werden beim ersten Laden automatisch migriert
+- `theme.js` – wendet Theme + Hintergrundbild an
+- `sounds.js` – synthetische Feedback-Töne
 - `game.js`, `config.js` – Logik der beiden Seiten
-- `style.css` – gemeinsames Design
+- `style.css` – gemeinsames Design, alle 5 Themes
+- `backgrounds/*.svg` – die 5 Hintergrundbilder
 
 ## Deployment auf GitHub Pages
 
@@ -41,10 +78,16 @@ anderen Gerät, sieht er die dort angelegten Codes nicht.
 1. Auf **genau dem Gerät**, das beim Spiel benutzt wird, die Konfigurations-
    seite öffnen: `https://<dein-user>.github.io/detektiv-spiel/config.html`
 2. Passwort eingeben (Standard: `geburtstag`, vorher in `config.js` ändern).
-3. Codes + zugehörige Texte anlegen.
-4. Über „Export (JSON)“ ein Backup herunterladen – falls der Browser-Speicher
-   mal gelöscht wird, lässt sich der Stand per „Import“ wiederherstellen.
-5. Zum Spielen: `index.html` (bzw. die Startseite) öffnen.
+3. Auf Seite 1 („👋 Willkommen“) Titel/Untertitel/Fehlermeldung, Code-Länge,
+   Design, Hintergrundbild und Sounds festlegen – die Code-Länge idealerweise
+   zuerst, sie gilt für alle danach angelegten Rätsel.
+4. Mit „Weiter →“ (bzw. „+ Neues Rätsel“ oder den Punkten oben) durch die
+   Rätsel-Seiten gehen und pro Seite Code, Überschrift, Beschreibung und
+   optional eine Sprachnachricht eintragen.
+5. Über „Export (JSON)“ ein Backup herunterladen – falls der Browser-Speicher
+   mal gelöscht wird, lässt sich der Stand per „Import“ wiederherstellen
+   (ersetzt dabei die komplette Rätsel-Liste).
+6. Zum Spielen: `index.html` (bzw. die Startseite) öffnen.
 
 ## Hinweise
 
@@ -55,3 +98,14 @@ anderen Gerät, sieht er die dort angelegten Codes nicht.
   vorher exportieren!
 - Ein Code muss aus genau 4 Ziffern bestehen; der Text darf beliebig lang
   sein und Zeilenumbrüche enthalten.
+- Sprachnachrichten benötigen Mikrofon-Zugriff (Browser fragt beim ersten
+  Aufnehmen danach) und eine sichere Verbindung – auf `https://…github.io`
+  und `localhost` funktioniert das, auf `http://` nicht.
+- Wiedergabe läuft intern über eine `blob:`-URL statt direkt über die
+  gespeicherte data-URL, weil Safari von MediaRecorder aufgenommenes,
+  fragmentiertes MP4 sonst nicht abspielen kann (Dauer bleibt "Infinity",
+  kein Ton). Das betrifft sowohl die Vorschau in `config.html` als auch die
+  Wiedergabe im Spiel.
+- Aufnahmen werden als Base64 im localStorage gespeichert (Browser-Limit
+  meist 5–10 MB pro Seite) – Nachrichten daher kurz halten. Der JSON-Export
+  wird durch Sprachnachrichten entsprechend größer.

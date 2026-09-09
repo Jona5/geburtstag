@@ -2,7 +2,8 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#14110f">
 <title>Detektiv-Spiel</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,11 +12,11 @@
 </head>
 <body>
   <main class="wrap">
-    <h1>🕵️ Akte des Falls</h1>
-    <p class="subtitle">Gib den 4-stelligen Code ein, den du gefunden hast.</p>
+    <h1 id="game-title">🕵️ Akte des Falls</h1>
+    <p class="subtitle" id="game-subtitle">Gib den Code ein, den du gefunden hast.</p>
 
     <section id="entry" class="card">
-      <input type="text" id="code-input" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="••••" aria-label="4-stelliger Code">
+      <input type="text" id="code-input" maxlength="4" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" placeholder="••••" aria-label="Code">
       <div class="btn-row">
         <button id="check-btn" class="btn">Prüfen</button>
       </div>
@@ -23,8 +24,13 @@
     </section>
 
     <section id="result" class="card" hidden>
+      <h2 id="result-title" class="result-title" hidden></h2>
       <p id="result-text" class="result-text"></p>
-      <button id="reset-btn" class="btn btn-secondary">Neuen Code eingeben</button>
+      <audio id="result-audio" hidden></audio>
+      <div class="btn-row">
+        <button id="replay-voice-btn" class="btn btn-secondary" type="button" hidden>🎙️ Nachricht wiederholen</button>
+        <button id="reset-btn" class="btn btn-secondary">Neuen Code eingeben</button>
+      </div>
     </section>
   </main>
 
@@ -33,6 +39,8 @@
   </footer>
 
   <script src="storage.js"></script>
+  <script src="theme.js"></script>
+  <script src="sounds.js"></script>
   <script src="game.js"></script>
 </body>
 </html>

@@ -4,15 +4,48 @@ document.addEventListener('DOMContentLoaded', () => {
   const input = document.getElementById('code-input');
   const checkBtn = document.getElementById('check-btn');
   const resetBtn = document.getElementById('reset-btn');
+  const replayVoiceBtn = document.getElementById('replay-voice-btn');
   const resultEl = document.getElementById('result');
+  const resultTitle = document.getElementById('result-title');
   const resultText = document.getElementById('result-text');
+  const resultAudio = document.getElementById('result-audio');
   const errorEl = document.getElementById('error');
   const entryEl = document.getElementById('entry');
+  const titleEl = document.getElementById('game-title');
+  const subtitleEl = document.getElementById('game-subtitle');
+
+  const settings = loadSettings();
+  const codeLength = settings.codeLength || 4;
+
+  titleEl.textContent = settings.gameTitle;
+  subtitleEl.textContent = settings.gameSubtitle;
+  errorEl.textContent = settings.wrongMessage;
+
+  input.maxLength = codeLength;
+  input.placeholder = '•'.repeat(codeLength);
+
+  let currentVoiceUrl = null;
+
+  function releaseVoiceUrl() {
+    if (currentVoiceUrl) {
+      URL.revokeObjectURL(currentVoiceUrl);
+      currentVoiceUrl = null;
+    }
+  }
+
+  resultAudio.addEventListener('error', () => {
+    // Hilft bei der Fehlersuche, falls ein Browser das Aufnahmeformat
+    // doch nicht abspielen kann.
+    console.error('Sprachnachricht konnte nicht abgespielt werden:', resultAudio.error);
+  });
 
   input.addEventListener('input', () => {
-    input.value = input.value.replace(/\D/g, '').slice(0, 4);
+    // Codes sind nicht auf Ziffern beschränkt, werden aber einheitlich in
+    // Großbuchstaben verglichen - sonst hängt es an Groß-/Kleinschreibung
+    // beim Tippen (Autokorrektur, mobile Tastaturen, ...).
+    input.value = input.value.toUpperCase().slice(0, codeLength);
     errorEl.hidden = true;
-    if (input.value.length === 4) {
+    if (input.value.length === codeLength) {
       checkCode();
     }
   });
@@ -23,21 +56,75 @@ document.addEventListener('DOMContentLoaded', () => {
 
   checkBtn.addEventListener('click', checkCode);
 
+  replayVoiceBtn.addEventListener('click', () => {
+    playVoiceMessage();
+  });
+
   resetBtn.addEventListener('click', () => {
     input.value = '';
+    resultAudio.pause();
+    resultAudio.removeAttribute('src');
+    releaseVoiceUrl();
+    replayVoiceBtn.hidden = true;
     resultEl.hidden = true;
     entryEl.hidden = false;
     errorEl.hidden = true;
     input.focus();
   });
 
+  function playVoiceMessage() {
+    resultAudio.currentTime = 0;
+    const playPromise = resultAudio.play();
+    if (playPromise && playPromise.catch) {
+      playPromise.catch((err) => {
+        console.error('Wiedergabe der Sprachnachricht blockiert:', err);
+      });
+    }
+  }
+
+  // Wandelt die gespeicherte data-URL in eine blob-URL um und spielt sie
+  // ab. Der Umweg über blob: ist nötig, weil Safari fragmentiertes MP3/MP4
+  // (so nimmt MediaRecorder dort auf) von einer data-URL nicht abspielen
+  // kann - von einer blob-URL desselben Inhalts aber schon.
+  async function showVoiceMessage(dataUrl) {
+    releaseVoiceUrl();
+    try {
+      currentVoiceUrl = await dataUrlToObjectUrl(dataUrl);
+    } catch (err) {
+      console.error('Sprachnachricht konnte nicht geladen werden:', err);
+      currentVoiceUrl = dataUrl; // Fallback: direkt versuchen
+    }
+    resultAudio.src = currentVoiceUrl;
+    resultAudio.load();
+    replayVoiceBtn.hidden = false;
+    playVoiceMessage();
+  }
+
   function checkCode() {
     const code = input.value.trim();
-    if (code.length !== 4) return;
+    if (code.length !== codeLength) return;
 
-    const codes = loadCodes();
-    if (Object.prototype.hasOwnProperty.call(codes, code)) {
-      resultText.textContent = codes[code];
+    const steps = loadSteps();
+    const currentSettings = loadSettings();
+    const step = steps.find((s) => s.code === code);
+
+    if (step) {
+      const title = step.title || '';
+      resultTitle.textContent = title;
+      resultTitle.hidden = !title;
+      resultText.textContent = step.description || '';
+
+      const audioSrc = step.audio;
+      if (audioSrc) {
+        showVoiceMessage(audioSrc);
+      } else {
+        resultAudio.pause();
+        resultAudio.removeAttribute('src');
+        releaseVoiceUrl();
+        replayVoiceBtn.hidden = true;
+        playCorrectSound(currentSettings.correctSound);
+      }
+
       entryEl.hidden = true;
       errorEl.hidden = true;
       resultEl.hidden = false;
@@ -46,6 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
       errorEl.classList.remove('shake');
       void errorEl.offsetWidth; // Reflow erzwingen, damit die Animation neu startet
       errorEl.classList.add('shake');
+      playWrongSound(currentSettings.wrongSound);
     }
   }
 

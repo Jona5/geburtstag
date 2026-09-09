@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500">
+  <defs>
+    <linearGradient id="fogSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#05070d"/>
+      <stop offset="100%" stop-color="#1a2233"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#fogSky)"/>
+  <g fill="#0c1018">
+    <rect x="0" y="320" width="90" height="180"/>
+    <rect x="100" y="260" width="70" height="240"/>
+    <rect x="180" y="350" width="60" height="150"/>
+    <rect x="250" y="220" width="80" height="280"/>
+    <rect x="340" y="300" width="90" height="200"/>
+    <rect x="440" y="260" width="60" height="240"/>
+    <rect x="510" y="340" width="100" height="160"/>
+    <rect x="620" y="280" width="70" height="220"/>
+    <rect x="700" y="230" width="100" height="270"/>
+  </g>
+  <ellipse cx="400" cy="330" rx="500" ry="60" fill="#c9d3e0" opacity="0.09"/>
+  <ellipse cx="200" cy="380" rx="400" ry="50" fill="#c9d3e0" opacity="0.07"/>
+  <circle cx="640" cy="80" r="26" fill="#e8e2c8" opacity="0.5"/>
+</svg>

@@ -2,7 +2,8 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#14110f">
 <title>Konfiguration – Detektiv-Spiel</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,31 +24,162 @@
     </div>
 
     <div id="panel" class="card" hidden style="text-align:left;">
-      <h1 style="font-size:1.4rem; text-align:center;">🗂 Codes verwalten</h1>
+      <h1 style="font-size:1.4rem; text-align:center;">🗂 Spiel konfigurieren</h1>
+      <p class="hint" style="text-align:center; margin-top:0;">Aufgebaut wie das Spiel selbst: Seite 1 ist die Willkommens-Seite, jede weitere Seite ist ein Rätsel (Code + Lösung) - in der Reihenfolge, in der die Spieler sie lösen.</p>
 
-      <form id="add-form" class="add-form">
-        <label>Neuer Code (4 Ziffern)
-          <input type="text" id="new-code" inputmode="numeric" maxlength="4" placeholder="1234">
-        </label>
-        <label>Text, der bei diesem Code angezeigt wird
-          <textarea id="new-text" rows="3" placeholder="Der Text, den die Spieler sehen..."></textarea>
-        </label>
-        <button class="btn" type="submit">Hinzufügen</button>
-      </form>
+      <div class="step-nav" id="step-nav"></div>
 
-      <div id="entry-list"></div>
+      <!-- Seite 1: Willkommen -->
+      <div id="step-welcome">
+        <div class="settings-section" style="margin-top:0; padding-top:0; border-top:none;">
+          <h2 class="section-title">👋 Willkommen</h2>
+          <p class="hint" style="margin-top:0;">Das sehen die Spieler, bevor sie den ersten Code eingeben.</p>
 
-      <div class="toolbar">
+          <label>
+            <span class="field-label" style="margin-top:0;">Titel</span>
+            <input type="text" id="setting-title" class="text-input" maxlength="60">
+          </label>
+          <label>
+            <span class="field-label">Untertitel</span>
+            <input type="text" id="setting-subtitle" class="text-input" maxlength="120">
+          </label>
+          <label>
+            <span class="field-label">Meldung bei falschem Code</span>
+            <input type="text" id="setting-wrong" class="text-input" maxlength="120">
+          </label>
+        </div>
+
+        <div class="settings-section">
+          <h2 class="section-title">🎨 Darstellung</h2>
+
+          <p class="field-label">Code-Länge (Anzahl Zeichen)</p>
+          <div class="swatch-row">
+            <button type="button" class="length-btn" data-length="3">3</button>
+            <button type="button" class="length-btn" data-length="4">4</button>
+            <button type="button" class="length-btn" data-length="5">5</button>
+            <button type="button" class="length-btn" data-length="6">6</button>
+            <button type="button" class="length-btn" data-length="7">7</button>
+            <button type="button" class="length-btn" data-length="8">8</button>
+          </div>
+          <p class="hint" style="margin-top:0.4rem;">Gilt für alle Rätsel-Codes und für das Eingabefeld im Spiel. Ändere die Länge idealerweise, bevor du Rätsel anlegst.</p>
+
+          <p class="field-label">Design</p>
+          <div class="swatch-row">
+            <button type="button" class="theme-swatch" data-theme="noir">
+              <span class="swatch-preview theme-preview-noir"></span>
+              Film Noir
+            </button>
+            <button type="button" class="theme-swatch" data-theme="neon">
+              <span class="swatch-preview theme-preview-neon"></span>
+              Neon Cyber
+            </button>
+            <button type="button" class="theme-swatch" data-theme="parchment">
+              <span class="swatch-preview theme-preview-parchment"></span>
+              Pergament
+            </button>
+            <button type="button" class="theme-swatch" data-theme="blood">
+              <span class="swatch-preview theme-preview-blood"></span>
+              Blutrot
+            </button>
+            <button type="button" class="theme-swatch" data-theme="agency">
+              <span class="swatch-preview theme-preview-agency"></span>
+              Waldgrün
+            </button>
+          </div>
+
+          <p class="field-label">Hintergrundbild – Vintage</p>
+          <div class="swatch-row">
+            <button type="button" class="bg-swatch" data-bg="none">
+              <span class="swatch-preview bg-preview-none">Ohne</span>
+            </button>
+            <button type="button" class="bg-swatch" data-bg="bg-corkboard">
+              <img class="swatch-preview" src="backgrounds/corkboard.svg" alt="Korkbrett">
+              Korkbrett
+            </button>
+            <button type="button" class="bg-swatch" data-bg="bg-paper">
+              <img class="swatch-preview" src="backgrounds/paper.svg" alt="Altes Papier">
+              Papier
+            </button>
+            <button type="button" class="bg-swatch" data-bg="bg-fog-city">
+              <img class="swatch-preview" src="backgrounds/fog-city.svg" alt="Neblige Stadt">
+              Nebel
+            </button>
+            <button type="button" class="bg-swatch" data-bg="bg-blueprint">
+              <img class="swatch-preview" src="backgrounds/blueprint.svg" alt="Blaupause">
+              Blaupause
+            </button>
+            <button type="button" class="bg-swatch" data-bg="bg-police-tape">
+              <img class="swatch-preview" src="backgrounds/police-tape.svg" alt="Absperrband">
+              Tatort
+            </button>
+          </div>
+
+          <p class="field-label">Hintergrundbild – Modern</p>
+          <div class="swatch-row">
+            <button type="button" class="bg-swatch" data-bg="bg-mesh-aurora">
+              <img class="swatch-preview" src="backgrounds/mesh-aurora.svg" alt="Aurora-Verlauf">
+              Aurora
+            </button>
+            <button type="button" class="bg-swatch" data-bg="bg-gradient-dusk">
+              <img class="swatch-preview" src="backgrounds/gradient-dusk.svg" alt="Dusk-Verlauf">
+              Dusk
+            </button>
+            <button type="button" class="bg-swatch" data-bg="bg-dot-grid">
+              <img class="swatch-preview" src="backgrounds/dot-grid.svg" alt="Punktraster">
+              Punktraster
+            </button>
+            <button type="button" class="bg-swatch" data-bg="bg-glow-orbs">
+              <img class="swatch-preview" src="backgrounds/glow-orbs.svg" alt="Glow Orbs">
+              Glow
+            </button>
+            <button type="button" class="bg-swatch" data-bg="bg-wave-lines">
+              <img class="swatch-preview" src="backgrounds/wave-lines.svg" alt="Wellen">
+              Wellen
+            </button>
+          </div>
+
+          <p class="field-label">Ton bei falschem Code</p>
+          <div class="swatch-row">
+            <button type="button" class="sound-btn wrong-sound-btn" data-sound="soft">Sanft ▶</button>
+            <button type="button" class="sound-btn wrong-sound-btn" data-sound="double">Doppelt ▶</button>
+            <button type="button" class="sound-btn wrong-sound-btn" data-sound="descend">Fallend ▶</button>
+            <button type="button" class="sound-btn wrong-sound-btn" data-sound="click">Klick ▶</button>
+            <button type="button" class="sound-btn wrong-sound-btn" data-sound="denied">Verweigert ▶</button>
+            <button type="button" class="sound-btn wrong-sound-btn" data-sound="thud">Wummern ▶</button>
+          </div>
+
+          <p class="field-label">Ton bei richtigem Code</p>
+          <div class="swatch-row">
+            <button type="button" class="sound-btn correct-sound-btn" data-sound="chime">Chime ▶</button>
+            <button type="button" class="sound-btn correct-sound-btn" data-sound="pop">Pop ▶</button>
+            <button type="button" class="sound-btn correct-sound-btn" data-sound="bell">Glocke ▶</button>
+            <button type="button" class="sound-btn correct-sound-btn" data-sound="rise">Aufsteigend ▶</button>
+            <button type="button" class="sound-btn correct-sound-btn" data-sound="confirm">Bestätigung ▶</button>
+            <button type="button" class="sound-btn correct-sound-btn" data-sound="sparkle">Funkeln ▶</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Seite 2+: je ein Rätsel -->
+      <div id="step-puzzle-container" hidden></div>
+
+      <div class="step-footer">
+        <button id="prev-step-btn" class="btn btn-secondary" type="button">← Zurück</button>
+        <span id="step-indicator" class="step-indicator"></span>
+        <button id="next-step-btn" class="btn btn-secondary" type="button">Weiter →</button>
+      </div>
+
+      <div class="toolbar" style="margin-top:1.5rem; border-top:1px solid var(--border); padding-top:1rem;">
         <button id="export-btn" class="btn btn-secondary" type="button">⬇ Export (JSON)</button>
         <label class="btn btn-secondary" style="cursor:pointer;">
           ⬆ Import (JSON)
           <input type="file" id="import-input" accept="application/json" hidden>
         </label>
-        <button id="clear-all-btn" class="btn btn-secondary" type="button">🗑 Alle löschen</button>
+        <button id="clear-all-btn" class="btn btn-secondary" type="button">🗑 Alle Rätsel löschen</button>
       </div>
 
       <p id="status" hidden></p>
-      <p class="hint">Diese Codes werden nur in diesem Browser gespeichert (localStorage). Nutze Export, um sie zu sichern, und Import, um sie wiederherzustellen oder auf ein anderes Gerät zu übertragen.</p>
+      <p class="hint">Alles wird nur in diesem Browser gespeichert (localStorage). Nutze Export, um es zu sichern, und Import, um es wiederherzustellen oder auf ein anderes Gerät zu übertragen (ersetzt dabei die komplette Rätsel-Liste). Sprachnachrichten machen den Export deutlich größer – kurz halten.</p>
     </div>
 
     <p style="text-align:center; margin-top:1.5rem;">
@@ -56,6 +188,8 @@
   </main>
 
   <script src="storage.js"></script>
+  <script src="theme.js"></script>
+  <script src="sounds.js"></script>
   <script src="config.js"></script>
 </body>
 </html>
