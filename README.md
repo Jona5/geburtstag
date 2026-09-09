@@ -33,12 +33,15 @@ anderen Gerät, sieht er die dort angelegten Codes nicht.
   Hochladen automatisch verkleinert/komprimiert, damit localStorage nicht
   überläuft.
 - Codes dürfen **beliebige Zeichen und beliebige Länge** haben (kein festes
-  Format, jedes Rätsel kann einen anders langen Code haben) → hinterlegte
-  **Überschrift + Beschreibung des nächsten Rätsels** (und optional eine im
-  Browser aufgenommene Sprachnachricht). Codes werden beim Eingeben/Anlegen
-  automatisch in Großbuchstaben umgewandelt, damit Groß-/Kleinschreibung
-  beim Tippen keine Rolle spielt. Da die Länge nicht mehr feststeht, wird
-  ein Code im Spiel per Enter oder „Prüfen“-Button bestätigt (kein
+  Format, jedes Rätsel kann einen anders langen Code haben). Jedes Rätsel
+  **benennt sich selbst** (Überschrift, Beschreibung, Bild, Sprachnachricht)
+  – diese Angaben werden automatisch angezeigt, sobald der Code des
+  *vorherigen* Rätsels gelöst wird (fürs allererste Rätsel gibt's dafür
+  keinen "vorherigen Code" - den Fundort dafür auf der Willkommen-Seite
+  beschreiben). Codes werden beim Eingeben/Anlegen automatisch in
+  Großbuchstaben umgewandelt, damit Groß-/Kleinschreibung beim Tippen keine
+  Rolle spielt. Da die Länge nicht mehr feststeht, wird ein Code im Spiel
+  per Enter oder „Prüfen“-Button bestätigt (kein
   automatisches Absenden mehr).
 - Konfigurierbare Texte der Rätsel-Seite (Titel, Untertitel, Meldung bei
   falschem Code)
@@ -105,9 +108,10 @@ anderen Gerät, sieht er die dort angelegten Codes nicht.
    Rätsel-Seiten gehen und pro Seite Code, Überschrift, Beschreibung und
    optional eine Sprachnachricht eintragen. Auf der letzten Seite („🏁
    Finale“) die Abschluss-Seite festlegen.
-6. Über „Export (JSON)“ ein Backup herunterladen – falls der Browser-Speicher
-   mal gelöscht wird, lässt sich der Stand per „Import“ wiederherstellen
-   (ersetzt dabei die komplette Rätsel-Liste).
+6. Über „Export (JSON)“ ein Backup herunterladen – enthält Rätsel-Liste
+   *und* alle Einstellungen (Landing Page, Willkommen, Finale, Darstellung).
+   Falls der Browser-Speicher mal gelöscht wird, lässt sich der Stand per
+   „Import“ wiederherstellen (ersetzt dabei alles).
 7. QR-Code auf `https://<dein-user>.github.io/detektiv-spiel/landing.html`
    erzeugen (z. B. mit einem beliebigen Online-QR-Generator) und ausdrucken/
    aufstellen. Zum direkten Spielen/Testen geht auch `index.html`.

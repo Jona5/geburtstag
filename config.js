@@ -409,8 +409,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const subheading = document.createElement('p');
     subheading.className = 'hint';
     subheading.style.marginTop = '0';
-    subheading.textContent = 'Code, den die Spieler an dieser Station eingeben, und die Lösung (Überschrift + Hinweistext des nächsten Rätsels), die dabei angezeigt wird.';
+    subheading.textContent = 'Code für dieses Rätsel. Überschrift, Beschreibung, Bild und Sprachnachricht benennen DIESES Rätsel selbst und werden automatisch angezeigt, sobald der Code des vorherigen Rätsels gelöst wird.';
     stepPuzzleContainer.appendChild(subheading);
+
+    if (currentStepIndex === 2) {
+      const firstStepHint = document.createElement('p');
+      firstStepHint.className = 'hint';
+      firstStepHint.style.marginTop = '0';
+      firstStepHint.textContent = 'ℹ️ Für das erste Rätsel gibt es keinen "vorherigen Code", der diese Angaben freischaltet - beschreibe den Fundort stattdessen z. B. auf der Willkommen-Seite.';
+      stepPuzzleContainer.appendChild(firstStepHint);
+    }
 
     // Code
     const codeLabel = document.createElement('label');
@@ -456,13 +464,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const titleLabel = document.createElement('label');
     const titleLabelSpan = document.createElement('span');
     titleLabelSpan.className = 'field-label';
-    titleLabelSpan.textContent = 'Überschrift des nächsten Rätsels';
+    titleLabelSpan.textContent = 'Überschrift dieses Rätsels';
     titleLabel.appendChild(titleLabelSpan);
 
     const titleInput = document.createElement('input');
     titleInput.type = 'text';
     titleInput.className = 'text-input';
-    titleInput.placeholder = 'z. B. Rätsel 3: Die Bibliothek';
+    titleInput.placeholder = 'z. B. Die Bibliothek';
     titleInput.value = step.title || '';
     titleInput.addEventListener('change', () => {
       updateStep(step.id, { title: titleInput.value });
@@ -474,7 +482,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const descLabel = document.createElement('label');
     const descLabelSpan = document.createElement('span');
     descLabelSpan.className = 'field-label';
-    descLabelSpan.textContent = 'Beschreibung / Hinweistext';
+    descLabelSpan.textContent = 'Beschreibung dieses Rätsels';
     descLabel.appendChild(descLabelSpan);
 
     const descTextarea = document.createElement('textarea');
@@ -491,7 +499,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Bild
     const imageLabel = document.createElement('p');
     imageLabel.className = 'field-label';
-    imageLabel.textContent = 'Optional: Bild (z. B. für die letzte Seite/das Finale)';
+    imageLabel.textContent = 'Optional: Bild zu diesem Rätsel';
     stepPuzzleContainer.appendChild(imageLabel);
 
     const imageContainer = document.createElement('div');
@@ -503,7 +511,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Sprachnachricht
     const recorderLabel = document.createElement('p');
     recorderLabel.className = 'field-label';
-    recorderLabel.textContent = 'Optional: Sprachnachricht statt/zusätzlich zum Text';
+    recorderLabel.textContent = 'Optional: Sprachnachricht zu diesem Rätsel';
     stepPuzzleContainer.appendChild(recorderLabel);
 
     const recorderContainer = document.createElement('div');
@@ -528,12 +536,17 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- Export / Import / Alles löschen ---
 
   exportBtn.addEventListener('click', () => {
-    const steps = loadSteps();
-    const blob = new Blob([JSON.stringify(steps, null, 2)], { type: 'application/json' });
+    // Exportiert sowohl die Rätsel-Liste als auch alle Einstellungen
+    // (Landing Page, Willkommen-Texte, Finale, Darstellung) in einer Datei.
+    const data = {
+      steps: loadSteps(),
+      settings: loadSettings(),
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'detektivspiel-raetsel.json';
+    a.download = 'detektivspiel-backup.json';
     a.click();
     URL.revokeObjectURL(url);
   });
@@ -546,10 +559,23 @@ document.addEventListener('DOMContentLoaded', () => {
     reader.onload = () => {
       try {
         const imported = JSON.parse(reader.result);
-        if (!Array.isArray(imported)) {
-          throw new Error('Ungültiges Format (erwartet: Liste von Rätseln)');
+
+        // Unterstützt sowohl das aktuelle Format { steps, settings } als
+        // auch ältere Exports, die nur ein Array von Rätseln waren.
+        let importedSteps;
+        let importedSettings = null;
+        if (Array.isArray(imported)) {
+          importedSteps = imported;
+        } else if (imported && typeof imported === 'object' && Array.isArray(imported.steps)) {
+          importedSteps = imported.steps;
+          if (imported.settings && typeof imported.settings === 'object') {
+            importedSettings = imported.settings;
+          }
+        } else {
+          throw new Error('Ungültiges Format');
         }
-        const steps = imported.map((item) => ({
+
+        const steps = importedSteps.map((item) => ({
           id: (item && item.id) || makeStepId(),
           code: ((item && item.code) || '').toString().toUpperCase(),
           title: (item && item.title) || '',
@@ -558,9 +584,21 @@ document.addEventListener('DOMContentLoaded', () => {
           image: (item && item.image) || null,
         }));
         saveSteps(steps);
+
+        if (importedSettings) {
+          saveSettings({ ...DEFAULT_SETTINGS, ...importedSettings });
+        }
+
         currentStepIndex = 0;
         renderCurrentStep();
-        flashStatus('Import erfolgreich (hat die komplette Rätsel-Liste ersetzt).');
+        refreshWelcomeUI();
+        populateTextSettings();
+        populateLandingUI();
+        populateFinaleUI();
+        applyPresentation();
+        flashStatus(importedSettings
+          ? 'Import erfolgreich (Rätsel + Einstellungen ersetzt).'
+          : 'Import erfolgreich (hat die komplette Rätsel-Liste ersetzt).');
       } catch (err) {
         flashStatus('Import fehlgeschlagen: ' + err.message, true);
       }
@@ -689,9 +727,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const landingTextInput = document.getElementById('landing-text-input');
   const landingImagePickerContainer = document.getElementById('landing-image-picker');
 
-  const initialLandingSettings = loadSettings();
-  landingTitleInput.value = initialLandingSettings.landingTitle || '';
-  landingTextInput.value = initialLandingSettings.landingText || '';
+  function populateLandingUI() {
+    const settings = loadSettings();
+    landingTitleInput.value = settings.landingTitle || '';
+    landingTextInput.value = settings.landingText || '';
+    attachImagePicker(landingImagePickerContainer, settings.landingImage, (image) => {
+      const s = loadSettings();
+      s.landingImage = image;
+      saveSettings(s);
+    });
+  }
 
   landingTitleInput.addEventListener('input', () => {
     const settings = loadSettings();
@@ -705,11 +750,7 @@ document.addEventListener('DOMContentLoaded', () => {
     saveSettings(settings);
   });
 
-  attachImagePicker(landingImagePickerContainer, initialLandingSettings.landingImage, (image) => {
-    const settings = loadSettings();
-    settings.landingImage = image;
-    saveSettings(settings);
-  });
+  populateLandingUI();
 
   // --- Finale-Seite ---
 
@@ -717,9 +758,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const endTextInput = document.getElementById('end-text-input');
   const endImagePickerContainer = document.getElementById('end-image-picker');
 
-  const initialSettings = loadSettings();
-  endTitleInput.value = initialSettings.endTitle || '';
-  endTextInput.value = initialSettings.endText || '';
+  function populateFinaleUI() {
+    const settings = loadSettings();
+    endTitleInput.value = settings.endTitle || '';
+    endTextInput.value = settings.endText || '';
+    attachImagePicker(endImagePickerContainer, settings.endImage, (image) => {
+      const s = loadSettings();
+      s.endImage = image;
+      saveSettings(s);
+    });
+  }
 
   endTitleInput.addEventListener('input', () => {
     const settings = loadSettings();
@@ -733,9 +781,5 @@ document.addEventListener('DOMContentLoaded', () => {
     saveSettings(settings);
   });
 
-  attachImagePicker(endImagePickerContainer, initialSettings.endImage, (image) => {
-    const settings = loadSettings();
-    settings.endImage = image;
-    saveSettings(settings);
-  });
+  populateFinaleUI();
 });

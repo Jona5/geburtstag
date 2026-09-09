@@ -66,6 +66,15 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Eigene display-Regeln (z.B. .btn, .result-image) haben als Autoren-CSS
+   Vorrang vor der Browser-Standardregel [hidden] { display: none }, egal
+   wie hoch deren Spezifität ist - dadurch blieben Elemente mit hidden-
+   Attribut trotzdem sichtbar. Diese Regel stellt das erwartete Verhalten
+   wieder her. */
+[hidden] {
+  display: none !important;
+}
+
 html {
   -webkit-text-size-adjust: 100%;
 }

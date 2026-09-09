@@ -149,21 +149,26 @@ document.addEventListener('DOMContentLoaded', () => {
       saveProgress(progress + 1);
     }
 
-    const step = steps[stepIndex];
-    const title = step.title || '';
+    // Jeder Schritt benennt sich selbst (Überschrift/Beschreibung/Bild/
+    // Sprachnachricht). Beim Lösen von Code N wird daher der SELBST-
+    // Beschreibung des NÄCHSTEN Schritts gezeigt - das ist die Station,
+    // die die Spieler jetzt als Nächstes finden müssen.
+    const nextStep = steps[stepIndex + 1] || null;
+    const title = nextStep ? (nextStep.title || '') : '';
     resultTitle.textContent = title;
     resultTitle.hidden = !title;
-    resultText.textContent = step.description || '';
+    resultText.textContent = nextStep ? (nextStep.description || '') : '';
 
-    if (step.image) {
-      resultImage.src = step.image;
+    if (nextStep && nextStep.image) {
+      resultImage.src = nextStep.image;
       resultImage.hidden = false;
     } else {
       resultImage.hidden = true;
       resultImage.removeAttribute('src');
     }
 
-    // Letzter Rätsel-Schritt: zusätzlich die dedizierte Finale-Seite zeigen.
+    // Letzter Rätsel-Schritt (kein nächster Schritt mehr): zusätzlich die
+    // dedizierte Finale-Seite zeigen.
     showedFinale = stepIndex === steps.length - 1;
     if (showedFinale) {
       endTitle.textContent = currentSettings.endTitle || '';
@@ -184,7 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
       resetBtn.textContent = `Weiter mit dem Rätsel: ${nextName}`;
     }
 
-    const audioSrc = step.audio;
+    const audioSrc = nextStep ? nextStep.audio : null;
     if (audioSrc) {
       showVoiceMessage(audioSrc, voiceRequestToken);
     } else {

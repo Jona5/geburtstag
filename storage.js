@@ -4,17 +4,19 @@
 // index.html (Spiel) und config.html (Verwaltung).
 //
 // Ein Rätsel-Schritt ist ein Objekt:
-//   { id, code, title, description, audio }
+//   { id, code, title, description, image, audio }
 // - id: interne, stabile Kennung (unabhängig vom Code, damit sich der Code
 //   nachträglich ändern lässt ohne die Position zu verlieren)
-// - code: der einzugebende Code (leer, solange das Rätsel noch nicht
-//   fertig konfiguriert ist)
-// - title/description: Überschrift + Hinweistext des NÄCHSTEN Rätsels,
-//   die angezeigt werden, wenn dieser Code richtig eingegeben wird
-// - audio: data-URL einer aufgenommenen Sprachnachricht, oder null
+// - code: der Code, der DIESEN Schritt löst
+// - title/description/image/audio: benennen/beschreiben DIESEN Schritt
+//   selbst (self-naming) - werden im Spiel angezeigt, sobald der Code des
+//   VORHERIGEN Schritts gelöst wird (steps[i] beschreibt sich selbst,
+//   wird aber getriggert durch das Lösen von steps[i-1])
 //
 // Die Reihenfolge im Array entspricht der Reihenfolge im Spiel (Config-Seite
-// 2 = steps[0], Seite 3 = steps[1], ...).
+// 3 = steps[0], Seite 4 = steps[1], ...). Für steps[0] (erstes Rätsel) gibt
+// es keinen "vorherigen Code", der die Angaben freischaltet - der Fundort
+// muss z.B. über die Willkommen-Seite kommuniziert werden.
 
 const STEPS_KEY = 'detektivspiel-steps-v1';
 const LEGACY_CODES_KEY = 'detektivspiel-codes-v1'; // altes Format vor der Schritte-Ansicht
